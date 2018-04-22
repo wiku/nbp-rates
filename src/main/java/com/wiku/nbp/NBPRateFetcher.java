@@ -57,7 +57,7 @@ import java.util.Optional;
     @Override public BigDecimal fetchRateForPreviousWorkingDay( String symbol, String dateString ) throws
             NBPRateFetcherException
     {
-        return fetchRateForDay(symbol, daysBefore(dateString, 1));
+        return fetchRateForDay(symbol, getStringForEarlierDate(dateString, 1));
     }
 
     private NBPRate tryFetchRateForDate( String symbol, String dateString ) throws
@@ -91,21 +91,19 @@ import java.util.Optional;
 
     private String getUriForLastNDays( String symbol, String dateString, int lastNDays )
     {
-        return String.format("%s/%s/%s/%s", url, symbol, daysBefore(dateString, lastNDays), dateString);
+        return String.format("%s/%s/%s/%s", url, symbol, getStringForEarlierDate(dateString, lastNDays), dateString);
     }
 
     private Optional<NBPRate> findLastRate( String dateString, List<NBPRate> rates )
     {
-        String date = dateString;
-        for( int i = 0; i < MAX_DAYS_WITH_NO_QUOTES; i++ )
+        for( int daysBefore = 1; daysBefore <= MAX_DAYS_WITH_NO_QUOTES; daysBefore++ )
         {
-            String oneDayEarlier = daysBefore(date, 1);
-            Optional<NBPRate> rate = findRateForDay(rates, oneDayEarlier);
-            if( rate.isPresent() )
+            String previousDate = getStringForEarlierDate(dateString, daysBefore);
+            Optional<NBPRate> exchangeRate = findRateForDay(rates, previousDate);
+            if( exchangeRate.isPresent() )
             {
-                return rate;
+                return exchangeRate;
             }
-            date = oneDayEarlier;
         }
         return Optional.empty();
     }
@@ -115,7 +113,7 @@ import java.util.Optional;
         return rates.stream().filter(rate -> rate.getEffectiveDate().equals(oneDayEarlier)).findFirst();
     }
 
-    private String daysBefore( String dateString, int daysBefore )
+    private String getStringForEarlierDate( String dateString, int daysBefore )
     {
         LocalDate date = LocalDate.parse(dateString);
         return date.minusDays(daysBefore).toString();
