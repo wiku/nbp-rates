@@ -4,7 +4,9 @@ Simple app to fetch official NBP rates of table A using the official API provide
 Build instructions:
 1. Pull repositoty using git or download the content
 2. Run:
+```
 mvn clean install assembly:single
+```
 
 Usage:
 1) Create an input CSV file (separated with ";") containing requested date (in ISO format YYYY-MM-DD) and currency from table A, eg:
