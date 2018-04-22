@@ -69,7 +69,7 @@ import java.util.Optional;
                 .build());
 
         options.addOption(Option.builder(OPT_PREVIOUS)
-                .desc("Fetch exchange rates for the previous working date instead of the given day. This should probably be used for most tax calculations.")
+                .desc("Fetch exchange rates for the previous working date instead of the given day.")
                 .build());
 
         return options;
