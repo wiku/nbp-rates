@@ -14,7 +14,7 @@ import java.util.Optional;
 
 @Data public class NBPRateFetcher implements RateFetcher
 {
-    public static final int MAX_DAYS_WITH_NO_QUOTES = 7;
+    public static final int MAX_DAYS_WITH_NO_DATA = 7;
     private final String url = "http://api.nbp.pl/api/exchangerates/rates/A";
     private final RestClient client;
 
@@ -80,7 +80,7 @@ import java.util.Optional;
             RestClientException,
             NBPRateFetcherException
     {
-        NBPRatesResponse response = client.get(getUriForLastNDays(symbol, dateString, MAX_DAYS_WITH_NO_QUOTES),
+        NBPRatesResponse response = client.get(getUriForLastNDays(symbol, dateString, MAX_DAYS_WITH_NO_DATA),
                 NBPRatesResponse.class);
 
         Optional<NBPRate> rate = findLastRate(dateString, response.getRates());
@@ -96,7 +96,7 @@ import java.util.Optional;
 
     private Optional<NBPRate> findLastRate( String dateString, List<NBPRate> rates )
     {
-        for( int daysBefore = 1; daysBefore <= MAX_DAYS_WITH_NO_QUOTES; daysBefore++ )
+        for( int daysBefore = 1; daysBefore <= MAX_DAYS_WITH_NO_DATA; daysBefore++ )
         {
             String previousDate = getStringForEarlierDate(dateString, daysBefore);
             Optional<NBPRate> exchangeRate = findRateForDay(rates, previousDate);
