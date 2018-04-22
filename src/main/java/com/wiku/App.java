@@ -15,18 +15,14 @@ import java.util.Optional;
 
 public class App
 {
+
+    public static final String RUN_COMMAND = "java -jar nbp-rates-1.0-SNAPSHOT-jar-with-dependencies.jar";
+
     public static void main( String[] args )
     {
-        AppOptionsParser argsParser = new AppOptionsParser("java -jar nbp-rates-1.0-SNAPSHOT-jar-with-dependencies.jar");
+        AppOptionsParser argsParser = new AppOptionsParser(RUN_COMMAND);
         Optional<AppOptions> optionalOptions = argsParser.getOptions(args);
-        if( optionalOptions.isPresent() )
-        {
-            printRatesForFile(optionalOptions.get(), System.out);
-        }
-        else
-        {
-            System.exit(1);
-        }
+        optionalOptions.ifPresent(( options ) -> printRatesForFile(options, System.out));
     }
 
     static void printRatesForFile( AppOptions options, PrintStream out )
@@ -45,8 +41,11 @@ public class App
                         String date = lineSplit[0].trim();
                         String symbol = lineSplit[1].trim();
 
-                        BigDecimal exchangeRate = fetchRequestedRate(options, fetcher, date, symbol);
-                        printRateToOutput(options, out, date, symbol, exchangeRate);
+                        BigDecimal exchangeRate = fetchRequestedRate(fetcher,
+                                date,
+                                symbol,
+                                options.isFetchForPreviousDay());
+                        printRateToOutput(out, date, symbol, exchangeRate, options.isFullOutput());
                     }
                     catch( Exception e )
                     {
@@ -66,13 +65,13 @@ public class App
 
     }
 
-    private static void printRateToOutput( AppOptions options,
-            PrintStream out,
+    private static void printRateToOutput( PrintStream out,
             String date,
             String symbol,
-            BigDecimal rate )
+            BigDecimal rate,
+            boolean isFullOutput )
     {
-        if( options.isFullOutput() )
+        if( isFullOutput )
         {
             out.printf("%s;%s;%s%n", date, symbol, rate);
         }
@@ -82,13 +81,13 @@ public class App
         }
     }
 
-    private static BigDecimal fetchRequestedRate( AppOptions options,
-            RateFetcher fetcher,
+    private static BigDecimal fetchRequestedRate( RateFetcher fetcher,
             String date,
-            String symbol ) throws NBPRateFetcherException
+            String symbol,
+            boolean isFetchForPreviousDay ) throws NBPRateFetcherException
     {
         BigDecimal rate;
-        if( options.isFetchForPreviousDay() )
+        if( isFetchForPreviousDay )
         {
             rate = fetcher.fetchRateForPreviousWorkingDay(symbol, date);
         }

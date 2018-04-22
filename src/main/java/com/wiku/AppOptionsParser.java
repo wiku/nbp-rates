@@ -27,19 +27,19 @@ import java.util.Optional;
             boolean printFullOutput = false;
             boolean previousDay = false;
 
-            if(parsedOutput.hasOption("in"))
+            if( parsedOutput.hasOption(OPT_INPUT_FILE) )
             {
                 inputFile = parsedOutput.getOptionValue("in");
             }
-            if(parsedOutput.hasOption("f"))
+            if( parsedOutput.hasOption(OPT_FULL) )
             {
                 printFullOutput = true;
             }
-            if(parsedOutput.hasOption("p"))
+            if( parsedOutput.hasOption(OPT_PREVIOUS) )
             {
                 previousDay = true;
             }
-            return Optional.of(new AppOptions(inputFile,printFullOutput, previousDay));
+            return Optional.of(new AppOptions(inputFile, printFullOutput, previousDay));
 
         }
         catch( ParseException e )
