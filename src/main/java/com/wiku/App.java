@@ -41,11 +41,7 @@ public class App
                         String date = lineSplit[0].trim();
                         String symbol = lineSplit[1].trim();
 
-                        BigDecimal exchangeRate = fetchRequestedRate(fetcher,
-                                date,
-                                symbol,
-                                options.isFetchForPreviousDay());
-                        printRateToOutput(out, date, symbol, exchangeRate, options.isFullOutput());
+                        fetchRateAndPrintToOutput(options, out, fetcher, date, symbol);
                     }
                     catch( Exception e )
                     {
@@ -65,10 +61,27 @@ public class App
 
     }
 
+    private static void fetchRateAndPrintToOutput( AppOptions options,
+            PrintStream out,
+            RateFetcher fetcher,
+            String date,
+            String symbol )
+    {
+        try
+        {
+            BigDecimal exchangeRate = fetchRequestedRate(fetcher, date, symbol, options.isFetchForPreviousDay());
+            printRateToOutput(out, date, symbol, exchangeRate.toPlainString(), options.isFullOutput());
+        }
+        catch( NBPRateFetcherException e )
+        {
+            printRateToOutput(out, date, symbol, "ERROR: " + e.getMessage(), options.isFullOutput());
+        }
+    }
+
     private static void printRateToOutput( PrintStream out,
             String date,
             String symbol,
-            BigDecimal rate,
+            String rate,
             boolean isFullOutput )
     {
         if( isFullOutput )
