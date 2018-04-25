@@ -1,14 +1,14 @@
-package com.wiku.nbp.json;
+package com.wiku.nbp.infrastructure.sources.currency;
 
 import lombok.Data;
 
 import java.util.List;
 
 @Data
-public class NBPRatesResponse
+public class CurrencyRates
 {
     String table;
     String currency;
     String code;
-    List<NBPRate> rates;
+    List<CurrencyRate> rates;
 }

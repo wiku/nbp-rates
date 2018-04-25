@@ -1,9 +1,9 @@
-package com.wiku.nbp.json;
+package com.wiku.nbp.infrastructure.sources.currency;
 
 import lombok.Data;
 
 @Data
-public class NBPRate
+public class CurrencyRate
 {
     String no;
     String effectiveDate;

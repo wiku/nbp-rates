@@ -1,4 +1,4 @@
-package com.wiku.nbp.json;
+package com.wiku.nbp.infrastructure.sources.gold;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;

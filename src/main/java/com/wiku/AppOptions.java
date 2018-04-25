@@ -1,7 +1,6 @@
 package com.wiku;
 
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 
 @Data
 public class AppOptions

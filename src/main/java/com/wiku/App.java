@@ -1,9 +1,10 @@
 package com.wiku;
 
-import com.wiku.nbp.CachedRateFetcher;
-import com.wiku.nbp.NBPRateFetcher;
-import com.wiku.nbp.NBPRateFetcherException;
-import com.wiku.nbp.RateFetcher;
+import com.wiku.nbp.application.CachedRateFetcher;
+import com.wiku.nbp.application.NBPRateFetcher;
+import com.wiku.nbp.application.RateFetcher;
+import com.wiku.nbp.application.RateFetcherException;
+import com.wiku.nbp.infrastructure.sources.RateResourceFactory;
 import com.wiku.rest.client.RestClient;
 
 import java.io.IOException;
@@ -11,6 +12,8 @@ import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 public class App
@@ -27,27 +30,28 @@ public class App
 
     static void printRatesForFile( AppOptions options, PrintStream out )
     {
-        RateFetcher fetcher = new CachedRateFetcher(new NBPRateFetcher(new RestClient()));
-
+        RateFetcher fetcher = new CachedRateFetcher(new NBPRateFetcher(new RateResourceFactory(new RestClient())));
         try
         {
             Files.lines(Paths.get(options.getInputFile())).sequential().forEach(line -> {
 
                 if( !line.isEmpty() )
                 {
+                    String dateString = "<unknown_date>";
+                    String symbol = "<unknown_symbol>";
                     try
                     {
                         String[] lineSplit = line.split(";");
-                        String date = lineSplit[0].trim();
-                        String symbol = lineSplit[1].trim();
+                        dateString = lineSplit[0].trim();
+                        symbol = lineSplit[1].trim();
 
+                        LocalDate date = LocalDate.parse(dateString);
                         fetchRateAndPrintToOutput(options, out, fetcher, date, symbol);
                     }
                     catch( Exception e )
                     {
-                        System.err.println("Failed to fetch currency rate for line: " + line + ": " + e.getMessage());
                         e.printStackTrace();
-                        System.exit(1);
+                        printRateToOutput(out, dateString, symbol, "ERROR: " + e.getMessage(), options.isFullOutput());
                     }
                 }
             });
@@ -64,29 +68,36 @@ public class App
     private static void fetchRateAndPrintToOutput( AppOptions options,
             PrintStream out,
             RateFetcher fetcher,
-            String date,
-            String symbol )
+            LocalDate date,
+            String symbol ) throws RateFetcherException
     {
-        try
-        {
-            BigDecimal exchangeRate = fetchRequestedRate(fetcher, date, symbol, options.isFetchForPreviousDay());
-            printRateToOutput(out, date, symbol, exchangeRate.toPlainString(), options.isFullOutput());
-        }
-        catch( NBPRateFetcherException e )
-        {
-            printRateToOutput(out, date, symbol, "ERROR: " + e.getMessage(), options.isFullOutput());
-        }
+
+        BigDecimal exchangeRate = fetchRequestedRate(fetcher, date, symbol, options.isFetchForPreviousDay());
+        printRateToOutput(out,
+                date.format(DateTimeFormatter.ISO_DATE),
+                symbol,
+                exchangeRate.toPlainString(),
+                options.isFullOutput());
+
+    }
+
+    private static BigDecimal fetchRequestedRate( RateFetcher fetcher,
+            LocalDate date,
+            String symbol,
+            boolean isFetchForPreviousDay ) throws RateFetcherException
+    {
+        return fetcher.fetchRateForDay(symbol, isFetchForPreviousDay ? date.minusDays(1) : date);
     }
 
     private static void printRateToOutput( PrintStream out,
-            String date,
+            String dateString,
             String symbol,
             String rate,
             boolean isFullOutput )
     {
         if( isFullOutput )
         {
-            out.printf("%s;%s;%s%n", date, symbol, rate);
+            out.printf("%s;%s;%s%n", dateString, symbol, rate);
         }
         else
         {
@@ -94,20 +105,4 @@ public class App
         }
     }
 
-    private static BigDecimal fetchRequestedRate( RateFetcher fetcher,
-            String date,
-            String symbol,
-            boolean isFetchForPreviousDay ) throws NBPRateFetcherException
-    {
-        BigDecimal rate;
-        if( isFetchForPreviousDay )
-        {
-            rate = fetcher.fetchRateForPreviousWorkingDay(symbol, date);
-        }
-        else
-        {
-            rate = fetcher.fetchRateForDay(symbol, date);
-        }
-        return rate;
-    }
 }
