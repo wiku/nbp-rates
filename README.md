@@ -22,10 +22,13 @@ mvn clean install assembly:single
 
 ```
 java -jar target/nbp-rates-1.0-SNAPSHOT-jar-with-dependencies.jar
- -f                     Print full output (input & rates, CSV separated by ';')
+ -f                     Print full output (input & rates, CSV separated by
+                        ';')
  -in <input_csv_file>   input file (CSV, separated with ';')
- -p                     Fetch exchange rates for the previous working day
+ -p                     Fetch exchange rates for the previous working date
                         instead of the given day.
+ -v                     Verbose output. Prints all error details including
+                        stacktraces.
 ```
 
 __Note: Option ```-p``` is very important.__ If specified, it will fetch rates for the __previous__ working day, instead of the requested date. Eg. If your date is Monday, you will get exchange rate from previous working day (Friday)! This is useful when you have a list of transactions made on specific dates, but need to fetch average exchange rates for the preceeding days.__
