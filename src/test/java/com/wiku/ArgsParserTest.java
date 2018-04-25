@@ -15,11 +15,11 @@ public class ArgsParserTest
     @Test
     public void canParseCorrectCLIArguments() throws ParseException
     {
-        String[] args = {"-in", "input.txt", "-f", "-p"};
+        String[] args = {"-in", "input.txt", "-f", "-p", "-v"};
 
         AppOptions options = parser.getOptions(args);
 
-        assertEquals(new AppOptions("input.txt", true, true), options);
+        assertEquals(new AppOptions("input.txt", true, true, true), options);
     }
 
     @Test(expected = ParseException.class)
@@ -37,7 +37,7 @@ public class ArgsParserTest
 
         AppOptions options = parser.getOptions(args);
 
-        assertEquals(new AppOptions("input.txt", false, false), options);
+        assertEquals(new AppOptions("input.txt", false, false, false), options);
     }
 
 }

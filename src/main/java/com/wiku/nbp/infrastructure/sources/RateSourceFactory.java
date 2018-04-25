@@ -5,7 +5,7 @@ import com.wiku.nbp.infrastructure.sources.gold.GoldRateSource;
 import com.wiku.rest.client.RestClient;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor public class RateResourceFactory
+@RequiredArgsConstructor public class RateSourceFactory
 {
 
     private final RestClient client;

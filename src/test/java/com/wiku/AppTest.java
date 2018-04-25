@@ -33,7 +33,7 @@ public class AppTest
         File tempFile = folder.newFile();
         PrintStream out = createPrintStreamToFile(tempFile);
 
-        App.printRatesForFile(new AppOptions(INPUT_FILE, true, true), out);
+        App.printRatesForFile(new AppOptions(INPUT_FILE, true, true, false), out);
 
         assertThatFileLinesEquals(tempFile, EXPECTED_FILE_CONTENT);
     }
@@ -41,7 +41,7 @@ public class AppTest
     @Ignore // previous test version for demo purpose
     @Test public void shouldFetchRatesForEachDateInFileToSout() throws IOException
     {
-        App.printRatesForFile(new AppOptions(INPUT_FILE, false, true), System.out);
+        App.printRatesForFile(new AppOptions(INPUT_FILE, false, true, false), System.out);
     }
 
     private PrintStream createPrintStreamToFile( File tempFile ) throws FileNotFoundException

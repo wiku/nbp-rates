@@ -4,7 +4,7 @@ import com.wiku.nbp.application.CachedRateFetcher;
 import com.wiku.nbp.application.NBPRateFetcher;
 import com.wiku.nbp.application.RateFetcherException;
 import com.wiku.nbp.application.RateFetcher;
-import com.wiku.nbp.infrastructure.sources.RateResourceFactory;
+import com.wiku.nbp.infrastructure.sources.RateSourceFactory;
 import com.wiku.rest.client.RestClient;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -15,7 +15,7 @@ import java.time.LocalDate;
 public class NBPRateFetcherTest
 {
     private RestClient client = new RestClient();
-    private RateFetcher nbpRateFetcher = new CachedRateFetcher(new NBPRateFetcher(new RateResourceFactory(client)));
+    private RateFetcher nbpRateFetcher = new CachedRateFetcher(new NBPRateFetcher(new RateSourceFactory(client)));
 
     @Test
     public void canFetchUSDRateForDayOfTheWeek() throws RateFetcherException

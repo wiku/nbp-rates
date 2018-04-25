@@ -4,7 +4,7 @@ import com.wiku.nbp.application.CachedRateFetcher;
 import com.wiku.nbp.application.NBPRateFetcher;
 import com.wiku.nbp.application.RateFetcher;
 import com.wiku.nbp.application.RateFetcherException;
-import com.wiku.nbp.infrastructure.sources.RateResourceFactory;
+import com.wiku.nbp.infrastructure.sources.RateSourceFactory;
 import com.wiku.rest.client.RestClient;
 import org.apache.commons.cli.ParseException;
 
@@ -32,7 +32,7 @@ public class App
         }
         catch( ParseException e )
         {
-            System.err.println("Invalid command line arguments: " + e.getMessage());
+            System.err.println("Invalid command line arguments: " + e.toString());
             argsParser.printHelp();
             System.exit(1);
         }
@@ -40,7 +40,7 @@ public class App
 
     static void printRatesForFile( AppOptions options, PrintStream out )
     {
-        RateFetcher fetcher = new CachedRateFetcher(new NBPRateFetcher(new RateResourceFactory(new RestClient())));
+        RateFetcher fetcher = new CachedRateFetcher(new NBPRateFetcher(new RateSourceFactory(new RestClient())));
         try
         {
             Files.lines(Paths.get(options.getInputFile())).sequential().forEach(line -> {
@@ -60,8 +60,9 @@ public class App
                     }
                     catch( Exception e )
                     {
-                        e.printStackTrace();
-                        printRateToOutput(out, dateString, symbol, "ERROR: " + e.getMessage(), options.isFullOutput());
+                        printRateToOutput(out, dateString, symbol, "ERROR: " + e.toString(), options.isFullOutput());
+                        if(options.isVerbose())
+                            e.printStackTrace();
                     }
                 }
             });
@@ -69,7 +70,10 @@ public class App
         catch( IOException e )
         {
             System.err.println("Error occured while reading file: " + options.getInputFile() + ": " + e.getMessage());
-            e.printStackTrace();
+
+            if( options.isVerbose() )
+                e.printStackTrace();
+
             System.exit(1);
         }
 

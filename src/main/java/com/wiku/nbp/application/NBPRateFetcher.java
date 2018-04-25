@@ -1,7 +1,7 @@
 package com.wiku.nbp.application;
 
 import com.wiku.nbp.domain.Rate;
-import com.wiku.nbp.infrastructure.sources.RateResourceFactory;
+import com.wiku.nbp.infrastructure.sources.RateSourceFactory;
 import com.wiku.nbp.infrastructure.sources.RateSource;
 import com.wiku.nbp.infrastructure.sources.RateSourceException;
 import lombok.Data;
@@ -17,7 +17,7 @@ import java.util.Optional;
     private final String url = "http://api.nbp.pl/api/exchangerates/rates/A";
     private final String xauUrl = "http://api.nbp.pl/api/cenyzlota";
 
-    private final RateResourceFactory rateResourceFactory;
+    private final RateSourceFactory rateSourceFactory;
 
     /**
      * Fetches NBP average currency rate for a given date using the official NBP API:
@@ -32,7 +32,7 @@ import java.util.Optional;
      */
     @Override public BigDecimal fetchRateForDay( String symbol, LocalDate date ) throws RateFetcherException
     {
-        RateSource rateSource = rateResourceFactory.getRateFetcher(symbol);
+        RateSource rateSource = rateSourceFactory.getRateFetcher(symbol);
 
         try
         {

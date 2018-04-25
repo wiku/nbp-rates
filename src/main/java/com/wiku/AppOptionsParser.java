@@ -11,6 +11,8 @@ import java.util.Optional;
     public static final String OPT_PREVIOUS = "p";
     public static final String OPT_FULL = "f";
     public static final String OPT_INPUT_FILE = "in";
+    public static final String OPT_VERBOSE = "v";
+
     private final static Options OPTIONS = createOptions();
 
     private final String appCommand;
@@ -24,6 +26,7 @@ import java.util.Optional;
         String inputFile = null;
         boolean printFullOutput = false;
         boolean previousDay = false;
+        boolean verbose = false;
 
         if( parsedOutput.hasOption(OPT_INPUT_FILE) )
         {
@@ -37,8 +40,12 @@ import java.util.Optional;
         {
             previousDay = true;
         }
+        if(parsedOutput.hasOption(OPT_VERBOSE))
+        {
+            verbose = true;
+        }
 
-        return new AppOptions(inputFile, printFullOutput, previousDay);
+        return new AppOptions(inputFile, printFullOutput, previousDay, verbose);
     }
 
     public void printHelp()
@@ -64,6 +71,10 @@ import java.util.Optional;
 
         options.addOption(Option.builder(OPT_PREVIOUS)
                 .desc("Fetch exchange rates for the previous working date instead of the given day.")
+                .build());
+
+        options.addOption(Option.builder(OPT_VERBOSE)
+                .desc("Verbose output. Prints all error details including stacktraces.")
                 .build());
 
         return options;
