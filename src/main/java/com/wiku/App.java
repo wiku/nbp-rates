@@ -7,7 +7,6 @@ import com.wiku.nbp.application.RateFetcherException;
 import com.wiku.nbp.infrastructure.sources.RateResourceFactory;
 import com.wiku.rest.client.RestClient;
 import org.apache.commons.cli.ParseException;
-import sun.security.pkcs.ParsingException;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -16,7 +15,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 
 public class App
 {
