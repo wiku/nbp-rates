@@ -28,7 +28,7 @@ java -jar target/nbp-rates-1.0-SNAPSHOT-jar-with-dependencies.jar
                         instead of the given day.
 ```
 
-__Note: Option ```-p``` is very important.__ If specified, it will fetch rates for the __previous__ working day, instead of the requested date. Eg. If your date is Monday, you will get exchange rate from previousFriday! This is useful when you have a list of transactions made on specific dates, but need to fetch average exchange rates for the preceeding days.__
+__Note: Option ```-p``` is very important.__ If specified, it will fetch rates for the __previous__ working day, instead of the requested date. Eg. If your date is Monday, you will get exchange rate from previous working day (Friday)! This is useful when you have a list of transactions made on specific dates, but need to fetch average exchange rates for the preceeding days.__
 
 
 ## Examples
