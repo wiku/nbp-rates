@@ -6,6 +6,8 @@ import com.wiku.nbp.application.RateFetcher;
 import com.wiku.nbp.application.RateFetcherException;
 import com.wiku.nbp.infrastructure.sources.RateResourceFactory;
 import com.wiku.rest.client.RestClient;
+import org.apache.commons.cli.ParseException;
+import sun.security.pkcs.ParsingException;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -24,8 +26,18 @@ public class App
     public static void main( String[] args )
     {
         AppOptionsParser argsParser = new AppOptionsParser(RUN_COMMAND);
-        Optional<AppOptions> optionalOptions = argsParser.getOptions(args);
-        optionalOptions.ifPresent(( options ) -> printRatesForFile(options, System.out));
+
+        try
+        {
+            AppOptions options = argsParser.getOptions(args);
+            printRatesForFile(options, System.out);
+        }
+        catch( ParseException e )
+        {
+            System.err.println("Invalid command line arguments: " + e.getMessage());
+            argsParser.printHelp();
+            System.exit(1);
+        }
     }
 
     static void printRatesForFile( AppOptions options, PrintStream out )

@@ -15,42 +15,36 @@ import java.util.Optional;
 
     private final String appCommand;
 
-    public Optional<AppOptions> getOptions( String[] args )
+    public AppOptions getOptions( String[] args ) throws ParseException
     {
 
-        try
+        CommandLineParser parser = new DefaultParser();
+        CommandLine parsedOutput = parser.parse(OPTIONS, args);
+
+        String inputFile = null;
+        boolean printFullOutput = false;
+        boolean previousDay = false;
+
+        if( parsedOutput.hasOption(OPT_INPUT_FILE) )
         {
-            CommandLineParser parser = new DefaultParser();
-            CommandLine parsedOutput = parser.parse(OPTIONS, args);
-
-            String inputFile = null;
-            boolean printFullOutput = false;
-            boolean previousDay = false;
-
-            if( parsedOutput.hasOption(OPT_INPUT_FILE) )
-            {
-                inputFile = parsedOutput.getOptionValue("in");
-            }
-            if( parsedOutput.hasOption(OPT_FULL) )
-            {
-                printFullOutput = true;
-            }
-            if( parsedOutput.hasOption(OPT_PREVIOUS) )
-            {
-                previousDay = true;
-            }
-            return Optional.of(new AppOptions(inputFile, printFullOutput, previousDay));
-
+            inputFile = parsedOutput.getOptionValue("in");
         }
-        catch( ParseException e )
+        if( parsedOutput.hasOption(OPT_FULL) )
         {
-            System.err.println("Failed to parse command line arguments: " + e.getMessage());
-            HelpFormatter formatter = new HelpFormatter();
-            formatter.setWidth(80);
-            formatter.printHelp(appCommand, createOptions());
+            printFullOutput = true;
+        }
+        if( parsedOutput.hasOption(OPT_PREVIOUS) )
+        {
+            previousDay = true;
         }
 
-        return Optional.empty();
+        return new AppOptions(inputFile, printFullOutput, previousDay);
+    }
+
+    public void printHelp()
+    {
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp(appCommand, OPTIONS);
     }
 
     private static Options createOptions()

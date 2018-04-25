@@ -1,5 +1,6 @@
 package com.wiku;
 
+import org.apache.commons.cli.ParseException;
 import org.junit.Test;
 
 import java.util.Optional;
@@ -12,33 +13,31 @@ public class ArgsParserTest
     private AppOptionsParser parser = new AppOptionsParser("java -jar test.jar");
 
     @Test
-    public void canParseCorrectCLIArguments()
+    public void canParseCorrectCLIArguments() throws ParseException
     {
         String[] args = {"-in", "input.txt", "-f", "-p"};
 
-        Optional<AppOptions> options = parser.getOptions(args);
+        AppOptions options = parser.getOptions(args);
 
-        assertEquals(new AppOptions("input.txt", true, true), options.get());
+        assertEquals(new AppOptions("input.txt", true, true), options);
     }
 
-    @Test
-    public void canPrintHelpWhenMandatoryInputFileNotGiven()
+    @Test(expected = ParseException.class)
+    public void throwsExceptionWhenMandatoryOptionNotGiven() throws ParseException
     {
         String[] args = {"-f"};
 
-        Optional<AppOptions> options = parser.getOptions(args);
-
-        assertFalse(options.isPresent());
+        AppOptions options = parser.getOptions(args);
     }
 
     @Test
-    public void whenFullOptionNotGivenshouldCreateOptionWithValueFalse()
+    public void whenFullOptionNotGivenshouldCreateOptionWithValueFalse() throws ParseException
     {
         String[] args = {"-in", "input.txt" };
 
-        Optional<AppOptions> options = parser.getOptions(args);
+        AppOptions options = parser.getOptions(args);
 
-        assertEquals(new AppOptions("input.txt", false, false), options.get());
+        assertEquals(new AppOptions("input.txt", false, false), options);
     }
 
 }
