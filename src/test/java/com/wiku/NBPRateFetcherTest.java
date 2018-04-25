@@ -51,4 +51,17 @@ public class NBPRateFetcherTest
         BigDecimal rate = nbpRateFetcher.fetchRateForPreviousWorkingDay( "EUR", "2018-04-16");
         assertEquals(new BigDecimal("4.1769"), rate);
     }
+    @Test
+    public void canFetchPriceOfGold() throws NBPRateFetcherException
+    {
+        BigDecimal rate = nbpRateFetcher.fetchRateForPreviousWorkingDay( "XAU", "2018-04-25");
+        assertEquals(new BigDecimal("145.44"), rate);
+    }
+
+    @Test
+    public void canFetchPriceOfGoldBeforeWeekend() throws NBPRateFetcherException
+    {
+        BigDecimal rate = nbpRateFetcher.fetchRateForPreviousWorkingDay( "XAU", "2018-04-23");
+        assertEquals(new BigDecimal("146.09"), rate);
+    }
 }

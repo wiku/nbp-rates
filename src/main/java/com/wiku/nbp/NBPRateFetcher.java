@@ -1,5 +1,6 @@
 package com.wiku.nbp;
 
+import com.wiku.nbp.json.GoldPrice;
 import com.wiku.nbp.json.NBPRate;
 import com.wiku.nbp.json.NBPRatesResponse;
 import com.wiku.rest.client.ResourceNotFoundRestClientException;
@@ -9,13 +10,17 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 @Data public class NBPRateFetcher implements RateFetcher
 {
     public static final int MAX_DAYS_WITH_NO_DATA = 7;
     private final String url = "http://api.nbp.pl/api/exchangerates/rates/A";
+    private final String xauUrl = "http://api.nbp.pl/api/cenyzlota";
+
     private final RestClient client;
 
     /**
@@ -33,9 +38,8 @@ import java.util.Optional;
     {
         try
         {
-            NBPRate rate = tryFetchRateForDate(symbol, dateString);
-            BigDecimal decimalRate = new BigDecimal(rate.getMid());
-            return decimalRate;
+            BigDecimal rate = tryFetchRateForDate(symbol, dateString);
+            return rate;
         }
         catch( RestClientException e )
         {
@@ -60,15 +64,26 @@ import java.util.Optional;
         return fetchRateForDay(symbol, getStringForEarlierDate(dateString, 1));
     }
 
-    private NBPRate tryFetchRateForDate( String symbol, String dateString ) throws
+    private BigDecimal tryFetchRateForDate( String symbol, String dateString ) throws
             NBPRateFetcherException,
             RestClientException
     {
         try
         {
-            return client.get(String.format("%s/%s/%s", url, symbol, dateString), NBPRatesResponse.class)
-                    .getRates()
-                    .get(0);
+            if( isGold(symbol) )
+            {
+                GoldPrice[] goldPrices = client.get(String.format("%s/%s", xauUrl, dateString), GoldPrice[].class);
+                System.out.println(goldPrices[0].getPrice());
+                return new BigDecimal(goldPrices[0].getPrice());
+            }
+            else
+            {
+                NBPRate rate = client.get(String.format("%s/%s/%s", url, symbol, dateString), NBPRatesResponse.class)
+                        .getRates()
+                        .get(0);
+                return new BigDecimal(rate.getMid());
+            }
+
         }
         catch( ResourceNotFoundRestClientException e )
         {
@@ -76,30 +91,63 @@ import java.util.Optional;
         }
     }
 
-    private NBPRate getPreviousWorkingDayRate( String symbol, String dateString ) throws
+    private boolean isGold( String symbol )
+    {
+        return symbol.equals("XAU");
+    }
+
+    private BigDecimal getPreviousWorkingDayRate( String symbol, String dateString ) throws
             RestClientException,
             NBPRateFetcherException
     {
-        NBPRatesResponse response = client.get(getUriForLastNDays(symbol, dateString, MAX_DAYS_WITH_NO_DATA),
-                NBPRatesResponse.class);
 
-        Optional<NBPRate> rate = findLastRate(dateString, response.getRates());
+        Optional<BigDecimal> rate = Optional.empty();
+        if( isGold(symbol) )
+        {
+            GoldPrice[] response = client.get(String.format("%s/%s/%s",
+                    xauUrl,
+                    getStringForEarlierDate(dateString, MAX_DAYS_WITH_NO_DATA),
+                    dateString),
+                    GoldPrice[].class);
 
-        return rate.orElseThrow(() -> new NBPRateFetcherException(
-                "Failed to fetch rates for date " + dateString + " among rates present in the response: " + response));
+            rate = findLastRate(dateString, Arrays.asList(response),
+                    goldPrice -> new BigDecimal(goldPrice.getPrice()),
+                    goldPrice -> goldPrice.getDateString());
+
+            return rate.orElseThrow(() -> new NBPRateFetcherException(
+                    "Failed to fetch rates for date " + dateString + " among rates present in the response: " + response));
+        }
+        else
+        {
+
+            NBPRatesResponse response = client.get(String.format("%s/%s/%s/%s",
+                    url,
+                    symbol,
+                    getStringForEarlierDate(dateString, MAX_DAYS_WITH_NO_DATA),
+                    dateString),
+                    NBPRatesResponse.class);
+
+            rate = findLastRate(dateString,
+                    response.getRates(),
+                    nbpRate -> new BigDecimal(nbpRate.getMid()),
+                    nbpRate -> nbpRate.getEffectiveDate());
+
+            return rate.orElseThrow(() -> new NBPRateFetcherException(
+                    "Failed to fetch rates for date " + dateString + " among rates present in the response: " + response));
+        }
+
+
     }
 
-    private String getUriForLastNDays( String symbol, String dateString, int lastNDays )
-    {
-        return String.format("%s/%s/%s/%s", url, symbol, getStringForEarlierDate(dateString, lastNDays), dateString);
-    }
-
-    private Optional<NBPRate> findLastRate( String dateString, List<NBPRate> rates )
+    private <T> Optional<BigDecimal> findLastRate( String dateString,
+            List<T> rates,
+            Function<T, BigDecimal> rateExtractor,
+            Function<T, String> dateExtractor )
     {
         for( int daysBefore = 1; daysBefore <= MAX_DAYS_WITH_NO_DATA; daysBefore++ )
         {
             String previousDate = getStringForEarlierDate(dateString, daysBefore);
-            Optional<NBPRate> exchangeRate = findRateForDay(rates, previousDate);
+            Optional<BigDecimal> exchangeRate = findRateForDay(rates, previousDate, rateExtractor, dateExtractor);
             if( exchangeRate.isPresent() )
             {
                 return exchangeRate;
@@ -108,9 +156,15 @@ import java.util.Optional;
         return Optional.empty();
     }
 
-    private Optional<NBPRate> findRateForDay( List<NBPRate> rates, String oneDayEarlier )
+    private <T> Optional<BigDecimal> findRateForDay( List<T> rates,
+            String oneDayEarlier,
+            Function<T, BigDecimal> rateExtractor,
+            Function<T, String> dateExtractor )
     {
-        return rates.stream().filter(rate -> rate.getEffectiveDate().equals(oneDayEarlier)).findFirst();
+        return rates.stream()
+                .filter(rate -> dateExtractor.apply(rate).equals(oneDayEarlier))
+                .map(rateExtractor)
+                .findFirst();
     }
 
     private String getStringForEarlierDate( String dateString, int daysBefore )
