@@ -1,5 +1,5 @@
 # nbp-rates
-Simple app to fetch official NBP rates of table A using the official API provided by NBP (Narodowy Bank Polski) (http://api.nbp.pl/api/exchangerates/rates/A).
+Simple app to fetch official NBP currency exchange rates (table A) and gold prices using the official API provided by NBP (Narodowy Bank Polski) (http://api.nbp.pl/api/exchangerates/rates/A).
 
 Build instructions:
 1. Pull repositoty using git or download the content
@@ -9,13 +9,14 @@ mvn clean install assembly:single
 ```
 
 Usage:
-1) Create an input CSV file (separated with ";") containing requested date (in ISO format YYYY-MM-DD) and currency from table A, eg:
+1) Create an input CSV file (separated with ";") containing requested date (in ISO format YYYY-MM-DD) and currency symbol ("USD", "EUR", "CHF") or "XAU" for gold prices, eg:
 
 ```
 2016-06-02; USD
 2016-06-05; EUR
-2016-06-12; USD
+2016-06-12; XAU
 ```
+
 
 2) Run the tool with selected options:
 
